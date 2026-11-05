@@ -1,0 +1,41 @@
+name: Compilar Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Preparar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Verificar projeto Android
+        run: test -f android/pubspec.yaml
+      - name: Instalar dependencias
+        working-directory: android
+        run: flutter pub get
+      - name: Compilar APK de teste
+        working-directory: android
+        run: flutter build apk --debug
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ibabore-tracks-pro-android-debug
+          path: android/build/app/outputs/flutter-apk/app-debug.apk
+  
